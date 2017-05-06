@@ -30,14 +30,14 @@ class uwb:
             self._anchor2 = int(line[15:23], 16)/10
             height = (math.pow(self._anchor1, 2)-math.pow(self._anchor2, 2) +
                       math.pow(self._distance, 2))/(2*self._distance)
-            return height
+            self._x.append(height)
 
-    def range(self, textfile, rawfile, serverSocket, host, port):
+    def range(self, textfile, rawfile, server):
         while True:
             n = self._n
             x = self._x
             y = self._y
-            x.append(self._getRawDist())
+            self._getRawDist()
             a = [1, -2.0651, 1.5200, -0.3861]
             b = [0.0086, 0.0258, 0.0258, 0.0086]
             if n >= 3:
@@ -45,17 +45,14 @@ class uwb:
                          a[1]*y[n-1] - a[2]*y[n-2] - a[3]*y[n-3])
             else:
                 y.append(x[n])
-            print y[n]
             n = n+1
             self._n = n
             self._x = x
             self._y = y
 
             rawfile.write(str(x[-1]) + '\n')
-            print "Raw: " + str(self._x)
             textfile.write(str(y[-1]) + '\n')
-            print "Filtered: " + str(self._y)
-            serverSocket.sendto((str(y[-1]) + '\n'), (host, port))
+            server.send(str(y[-1]) + '\n')
 
     def getRange(self):
         return self._y[-1]

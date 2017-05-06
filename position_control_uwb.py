@@ -9,6 +9,7 @@ from dronekit import connect, VehicleMode
 from pymavlink import mavutil
 from velocity_fns import send_body_ned_velocity, send_body_ned_velocity_logging
 from uwb import uwb
+from serversocket import serversocket
 
 # print "Start simulator (SITL)"
 # sitl = dronekit_sitl.start_default()
@@ -44,19 +45,13 @@ try:
 
     host = "192.168.1.103"
     port = 5454
-    serverSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # wifi init
+    server = serversocket(host=host, port=port)  # wifi init
     vehicle = connect('/dev/ttyS0', wait_ready=True, baud=921600)  # vehicle init
     print "Connecting to UWB radio"
     radio = uwb(a=140, port='/dev/ttyACM0')  # UWB init
     print 'Connected. Starting to measure position...'
     radiothread = threading.Thread(target=radio.range,
-                                   args=(uwb_file,
-                                         uwb_raw,
-                                         serverSocket,
-                                         host,
-                                         port
-                                         )
-                                        )
+                                   args=(uwb_file, uwb_raw, server))
     radiothread.start()
 
     # Get some vehicle attributes (state)
