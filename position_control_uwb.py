@@ -49,15 +49,14 @@ try:
     print "Connecting to UWB radio"
     radio = uwb(a=140, port='/dev/ttyACM0')  # UWB init
     print 'Connected. Starting to measure position...'
-    radiothread = threading.Thread(target=radio.getRawDist)
-    # radiothread = threading.Thread(target=radio.range,
-    #                                args=(uwb_file,
-    #                                      uwb_raw,
-    #                                      serverSocket,
-    #                                      host,
-    #                                      port
-    #                                      )
-    #                                     )
+    radiothread = threading.Thread(target=radio.range,
+                                   args=(uwb_file,
+                                         uwb_raw,
+                                         serverSocket,
+                                         host,
+                                         port
+                                         )
+                                        )
     radiothread.start()
 
     # Get some vehicle attributes (state)
