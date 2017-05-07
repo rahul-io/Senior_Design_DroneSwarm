@@ -48,7 +48,7 @@ try:
     server = serversocket(host=host, port=port)  # wifi init
     vehicle = connect('/dev/ttyS0', wait_ready=True, baud=921600)  # vehicle init
     print "Connecting to UWB radio"
-    radio = uwb(a=140, port='/dev/ttyACM0')  # UWB init
+    radio = uwb(a=2000, port='/dev/ttyACM0')  # UWB init
     print 'Connected. Starting to measure position...'
     radiothread = threading.Thread(target=radio.range,
                                    args=(uwb_file, uwb_raw, server))

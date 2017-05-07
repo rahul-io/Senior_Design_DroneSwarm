@@ -21,9 +21,13 @@ class uwb:
             else:
                 self._buffer += self._ser.read(self._ser.inWaiting())
 
-        line, self._buffer = self._buffer.split('\n')[-2:]
+        line, self._buffer = self._buffer.split('\r\n')[-2:]
+        if len(line) != 65:
+            self._getRawDist()
+        if line[:1] != 'm':
+            self._getRawDist()
         # line = self._ser.readline()
-        if line[:2] == 'mr':
+        if line[:2] != 'mc':
             self._getRawDist()
         else:
             self._anchor1 = int(line[6:14], 16)/10
