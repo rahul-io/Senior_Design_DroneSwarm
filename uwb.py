@@ -15,26 +15,32 @@ class uwb:
         self._buffer = ''
 
     def _getRawDist(self):
-        while True:
-            if '\n' in self._buffer:
-                break
+        # while True:
+        #     if '\n' in self._buffer:
+        #         break
+        #     else:
+        #         self._buffer += self._ser.read(self._ser.inWaiting())
+        #
+        # line, self._buffer = self._buffer.split('\n')[-2:]
+        line = self._ser.readline()
+        # print line
+        if line[:1] == 'm':
+            # print line
+            if line[:2] == 'mc':
+                if len(line) == 65:
+                    print str(len(line)) + ": " + str(line)
+                    self._anchor1 = int(line[6:14], 16)/10
+                    self._anchor2 = int(line[15:23], 16)/10
+                    height = (math.pow(self._anchor1, 2) -
+                              math.pow(self._anchor2, 2) +
+                              math.pow(self._distance, 2))/(2*self._distance)
+                    self._x.append(height)
+                else:
+                    self._getRawDist()
             else:
-                self._buffer += self._ser.read(self._ser.inWaiting())
-
-        line, self._buffer = self._buffer.split('\r\n')[-2:]
-        if len(line) != 65:
-            self._getRawDist()
-        if line[:1] != 'm':
-            self._getRawDist()
-        # line = self._ser.readline()
-        if line[:2] != 'mc':
-            self._getRawDist()
+                self._getRawDist()
         else:
-            self._anchor1 = int(line[6:14], 16)/10
-            self._anchor2 = int(line[15:23], 16)/10
-            height = (math.pow(self._anchor1, 2)-math.pow(self._anchor2, 2) +
-                      math.pow(self._distance, 2))/(2*self._distance)
-            self._x.append(height)
+            self._getRawDist()
 
     def range(self, textfile, rawfile, server):
         while True:
