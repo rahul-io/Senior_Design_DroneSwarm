@@ -28,11 +28,11 @@ class uwb:
             # print line
             if line[:2] == 'mc':
                 if len(line) == 65:
-                    print str(len(line)) + ": " + str(line)
-                    self._anchor1 = int(line[6:14], 16)/10
-                    self._anchor2 = int(line[15:23], 16)/10
-                    height = (math.pow(self._anchor1, 2) -
-                              math.pow(self._anchor2, 2) +
+                    # print str(len(line)) + ": " + str(line)
+                    self._anchor0 = int(line[6:14], 16)/10
+                    self._anchor1 = int(line[15:23], 16)/10
+                    height = (math.pow(self._anchor0, 2) -
+                              math.pow(self._anchor1, 2) +
                               math.pow(self._distance, 2))/(2*self._distance)
                     self._x.append(height)
                 else:
