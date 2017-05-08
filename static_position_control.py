@@ -20,29 +20,29 @@ def control(goal):
     while True:
         myPos = radio.getRange()
         print "My current position:" + str(myPos)
-        gain = 0.0005
-        print "Desired position: " + str(desiredPos)
-        if (abs(goal - myPos) > 20):
+        gain = 0.004
+        print "Desired position: " + str(goal)
+        if (abs(goal - myPos) > 40):
             speed = (goal - myPos)*gain
-            send_body_ned_velocity_logging(vehicle, speed, 0, 0, pos_file, vel_file)
+            send_body_ned_velocity(vehicle, speed, 0, 0)
             # myPos = radio.getRange()
         else:
-            send_body_ned_velocity_logging(vehicle, 0, 0, 0, pos_file, vel_file)
+            send_body_ned_velocity(vehicle, 0, 0, 0)
 
 
 
-filename1 = "pos_gps" + time.strftime("%m_%d_%H%M") + ".txt"
-filename2 = "vel_imu" + time.strftime("%m_%d_%H%M") + ".txt"
-filename3 = "pos_uwb_filter" + time.strftime("%m_%d_%H%M") + ".txt"
-filename4 = "pos_uwb_raw" + time.strftime("%m_%d_%H%M") + ".txt"
-pos_file = open(filename1, 'w+')
-vel_file = open(filename2, 'w+')
-uwb_file = open(filename3, 'w+')
-uwb_raw = open(filename4, 'w+')
-pos_file.truncate()
-vel_file.truncate()
-uwb_file.truncate()
-uwb_raw.truncate()
+# filename1 = "pos_gps" + time.strftime("%m_%d_%H%M") + ".txt"
+# filename2 = "vel_imu" + time.strftime("%m_%d_%H%M") + ".txt"
+# filename3 = "pos_uwb_filter" + time.strftime("%m_%d_%H%M") + ".txt"
+# filename4 = "pos_uwb_raw" + time.strftime("%m_%d_%H%M") + ".txt"
+# pos_file = open(filename1, 'w+')
+# vel_file = open(filename2, 'w+')
+# uwb_file = open(filename3, 'w+')
+# uwb_raw = open(filename4, 'w+')
+# pos_file.truncate()
+# vel_file.truncate()
+# uwb_file.truncate()
+# uwb_raw.truncate()
 
 try:
     # Connect to the Vehicle.
@@ -56,7 +56,7 @@ try:
     radio = uwb(a=2000, port='/dev/ttyACM0')  # UWB init
     print 'Connected. Starting to measure position...'
     radiothread = threading.Thread(target=radio.range,
-                                   args=(uwb_file, uwb_raw, server))
+                                   args=(True, server))
     radiothread.start()
 
     # Get some vehicle attributes (state)
@@ -104,17 +104,17 @@ try:
 
     print 'Moving to desired position!'
 
-    controlthread = threading.Thread(target=control, args=(500,))
+    controlthread = threading.Thread(target=control, args=(1000,))
     controlthread.start()
 
     while True:
         pass
 
 except KeyboardInterrupt:
-    pos_file.close()
-    vel_file.close()
-    uwb_file.close()
-    uwb_raw.close()
+    # pos_file.close()
+    # vel_file.close()
+    # uwb_file.close()
+    # uwb_raw.close()
     radiothread.join()
     vehicle.close()
     sys.exit(0)

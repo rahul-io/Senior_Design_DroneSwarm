@@ -42,7 +42,7 @@ class uwb:
         else:
             self._getRawDist()
 
-    def range(self, textfile, rawfile, server):
+    def range(self, isLeader=False, server=''):
         while True:
             n = self._n
             x = self._x
@@ -59,10 +59,10 @@ class uwb:
             self._n = n
             self._x = x
             self._y = y
-
-            rawfile.write(str(x[-1]) + '\n')
-            textfile.write(str(y[-1]) + '\n')
-            server.send(str(y[-1]) + '\n')
+            # rawfile.write(str(x[-1]) + '\n')
+            # textfile.write(str(y[-1]) + '\n')
+            if isLeader:
+                server.send(str(y[-1]) + '\n')
 
     def getRange(self):
         return self._y[-1]

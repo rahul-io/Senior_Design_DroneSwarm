@@ -19,45 +19,45 @@ from clientsocket import clientsocket
 def control(client):
     while True:
         myPos = radio.getRange()
-        goal = client.receive()
-        print "My current position:" + str(myPos)
+        goal = float(client.receive())
         gain = 0.0005
+        print "My current position:" + str(myPos)
         print "Desired position: " + str(goal)
         if (abs(goal - myPos) > 20):
             speed = (goal - myPos)*gain
-            send_body_ned_velocity_logging(vehicle, speed, 0, 0, pos_file, vel_file)
+            send_body_ned_velocity(vehicle, speed, 0, 0)
             # myPos = radio.getRange()
         else:
-            send_body_ned_velocity_logging(vehicle, 0, 0, 0, pos_file, vel_file)
+            send_body_ned_velocity(vehicle, 0, 0, 0)
 
 
 
-filename1 = "pos_gps" + time.strftime("%m_%d_%H%M") + ".txt"
-filename2 = "vel_imu" + time.strftime("%m_%d_%H%M") + ".txt"
-filename3 = "pos_uwb_filter" + time.strftime("%m_%d_%H%M") + ".txt"
-filename4 = "pos_uwb_raw" + time.strftime("%m_%d_%H%M") + ".txt"
-pos_file = open(filename1, 'w+')
-vel_file = open(filename2, 'w+')
-uwb_file = open(filename3, 'w+')
-uwb_raw = open(filename4, 'w+')
-pos_file.truncate()
-vel_file.truncate()
-uwb_file.truncate()
-uwb_raw.truncate()
+# filename1 = "pos_gps" + time.strftime("%m_%d_%H%M") + ".txt"
+# filename2 = "vel_imu" + time.strftime("%m_%d_%H%M") + ".txt"
+# filename3 = "pos_uwb_filter" + time.strftime("%m_%d_%H%M") + ".txt"
+# filename4 = "pos_uwb_raw" + time.strftime("%m_%d_%H%M") + ".txt"
+# pos_file = open(filename1, 'w+')
+# vel_file = open(filename2, 'w+')
+# uwb_file = open(filename3, 'w+')
+# uwb_raw = open(filename4, 'w+')
+# pos_file.truncate()
+# vel_file.truncate()
+# uwb_file.truncate()
+# uwb_raw.truncate()
 
 try:
+    host = ""
+    port = 5454
     # Connect to the Vehicle.
     print("Connecting to vehicle & initializing UWB & WiFi")
-
-    host = "192.168.1.103"
-    port = 5454
-    client = clientsocket(host=host, port=port)  # wifi init
+    client = clientsocket(host, port)  # wifi init
+    print "connecting to vehicle"
     vehicle = connect('/dev/ttyS0', wait_ready=True, baud=921600)  # vehicle init
     print "Connecting to UWB radio"
     radio = uwb(a=2000, port='/dev/ttyACM0')  # UWB init
     print 'Connected. Starting to measure position...'
     radiothread = threading.Thread(target=radio.range,
-                                   args=(uwb_file, uwb_raw, server))
+                                   args=(False))
     radiothread.start()
 
     # Get some vehicle attributes (state)
@@ -87,8 +87,6 @@ try:
         # print " Mode: %s" % vehicle.mode.name    # settable
         time.sleep(1)
 
-
-
     # while True:
     #     pass
 
@@ -112,10 +110,10 @@ try:
         pass
 
 except KeyboardInterrupt:
-    pos_file.close()
-    vel_file.close()
-    uwb_file.close()
-    uwb_raw.close()
+    # pos_file.close()
+    # vel_file.close()
+    # uwb_file.close()
+    # uwb_raw.close()
     radiothread.join()
     vehicle.close()
     sys.exit(0)
