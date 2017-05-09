@@ -47,7 +47,7 @@ def control(client):
 
 try:
     host = ""
-    port = 5454
+    port = 5456
     # Connect to the Vehicle.
     print("Connecting to vehicle & initializing UWB & WiFi")
     client = clientsocket(host, port)  # wifi init
@@ -57,7 +57,7 @@ try:
     radio = uwb(a=2000, port='/dev/ttyACM0')  # UWB init
     print 'Connected. Starting to measure position...'
     radiothread = threading.Thread(target=radio.range,
-                                   args=(False))
+                                   args=(False,))
     radiothread.start()
 
     # Get some vehicle attributes (state)
@@ -115,6 +115,7 @@ except KeyboardInterrupt:
     # uwb_file.close()
     # uwb_raw.close()
     radiothread.join()
+    controlthread.join()
     vehicle.close()
     sys.exit(0)
 
