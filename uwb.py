@@ -1,3 +1,9 @@
+###############################################################################
+#   uwb.py
+#   Rahul Nunna, 2017
+#   UWB class.
+###############################################################################
+
 import serial
 import math
 
@@ -6,41 +12,47 @@ class uwb:
 
     def __init__(self, a=10000, port='/dev/ttyACM0', mybaud=9600):
         self._n = 0
-        self._x = []
-        self._y = []
+        self._rawDist = []
+        self.filteredDist = []
         self._anchor1 = 0
         self._anchor2 = 0
         self._ser = serial.Serial(port, baudrate=mybaud)
-        self._distance = a
+        self.totalRange = a
         self._buffer = ''
 
     def _getRawDist(self):
-        while True:
-            if '\n' in self._buffer:
-                break
+        # while True:
+        #     if '\n' in self._buffer:
+        #         break
+        #     else:
+        #         self._buffer += self._ser.read(self._ser.inWaiting())
+        #
+        # line, self._buffer = self._buffer.split('\n')[-2:]
+        line = self._ser.readline()
+        # print line
+        if line[:1] == 'm':
+            # print line
+            if line[:2] == 'mc':
+                if len(line) == 65:
+                    # print str(len(line)) + ": " + str(line)
+                    self._anchor0 = int(line[6:14], 16)/10
+                    self._anchor1 = int(line[15:23], 16)/10
+                    height = (math.pow(self._anchor0, 2) -
+                              math.pow(self._anchor1, 2) +
+                              math.pow(self.totalRange, 2))/(2*self.totalRange)
+                    self._rawDist.append(height)
+                else:
+                    self._getRawDist()
             else:
-                self._buffer += self._ser.read(self._ser.inWaiting())
-
-        line, self._buffer = self._buffer.split('\r\n')[-2:]
-        if len(line) != 65:
-            self._getRawDist()
-        if line[:1] != 'm':
-            self._getRawDist()
-        # line = self._ser.readline()
-        if line[:2] != 'mc':
-            self._getRawDist()
+                self._getRawDist()
         else:
-            self._anchor1 = int(line[6:14], 16)/10
-            self._anchor2 = int(line[15:23], 16)/10
-            height = (math.pow(self._anchor1, 2)-math.pow(self._anchor2, 2) +
-                      math.pow(self._distance, 2))/(2*self._distance)
-            self._x.append(height)
+            self._getRawDist()
 
-    def range(self, textfile, rawfile, server):
+    def range(self, isLeader=False, server=''):
         while True:
             n = self._n
-            x = self._x
-            y = self._y
+            x = self._rawDist
+            y = self.filteredDist
             self._getRawDist()
             a = [1, -2.0651, 1.5200, -0.3861]
             b = [0.0086, 0.0258, 0.0258, 0.0086]
@@ -51,12 +63,12 @@ class uwb:
                 y.append(x[n])
             n = n+1
             self._n = n
-            self._x = x
-            self._y = y
-
-            rawfile.write(str(x[-1]) + '\n')
-            textfile.write(str(y[-1]) + '\n')
-            server.send(str(y[-1]) + '\n')
+            self._rawDist = x
+            self.filteredDist = y
+            # rawfile.write(str(x[-1]) + '\n')
+            # textfile.write(str(y[-1]) + '\n')
+            if isLeader:
+                server.send(str(y[-1]) + '\n')
 
     def getRange(self):
-        return self._y[-1]
+        return self.filteredDist[-1]

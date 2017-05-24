@@ -1,11 +1,17 @@
+###############################################################################
+#   serversocket.py
+#   Rahul Nunna, 2017
+#   Server socket class, for follower.
+###############################################################################
+
 import socket
 
-host = ""
-port = 5454
 
-clientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+class clientsocket:
+    def __init__(self, host, port=5454):
+        self._client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self._client.bind((host, port))
 
-clientSocket.bind((host,port))
-
-while True:
-    print clientSocket.recv(1024)
+    def receive(self):
+        return self._client.recv(1024)

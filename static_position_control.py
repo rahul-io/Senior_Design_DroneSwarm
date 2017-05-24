@@ -16,28 +16,33 @@ from serversocket import serversocket
 # connection_string = sitl.connection_string()
 
 
-def control(offset):
-    myPos = radio.getRange()
-    gain = 0
-    desiredPos = myPos + offset
-    while (abs(desiredPos - myPos) > 5):
-        speed = (desiredPos - myPos)*gain
-        send_body_ned_velocity_logging(0, speed, 0, pos_file, vel_file)
+def control(goal):
+    while True:
         myPos = radio.getRange()
+        print "My current position:" + str(myPos)
+        gain = 0.004
+        print "Desired position: " + str(goal)
+        if (abs(goal - myPos) > 40):
+            speed = (goal - myPos)*gain
+            send_body_ned_velocity(vehicle, speed, 0, 0)
+            # myPos = radio.getRange()
+        else:
+            send_body_ned_velocity(vehicle, 0, 0, 0)
 
 
-filename1 = "pos_gps" + time.strftime("%m_%d_%H%M") + ".txt"
-filename2 = "vel_imu" + time.strftime("%m_%d_%H%M") + ".txt"
-filename3 = "pos_uwb_filter" + time.strftime("%m_%d_%H%M") + ".txt"
-filename4 = "pos_uwb_raw" + time.strftime("%m_%d_%H%M") + ".txt"
-pos_file = open(filename1, 'w+')
-vel_file = open(filename2, 'w+')
-uwb_file = open(filename3, 'w+')
-uwb_raw = open(filename4, 'w+')
-pos_file.truncate()
-vel_file.truncate()
-uwb_file.truncate()
-uwb_raw.truncate()
+
+# filename1 = "pos_gps" + time.strftime("%m_%d_%H%M") + ".txt"
+# filename2 = "vel_imu" + time.strftime("%m_%d_%H%M") + ".txt"
+# filename3 = "pos_uwb_filter" + time.strftime("%m_%d_%H%M") + ".txt"
+# filename4 = "pos_uwb_raw" + time.strftime("%m_%d_%H%M") + ".txt"
+# pos_file = open(filename1, 'w+')
+# vel_file = open(filename2, 'w+')
+# uwb_file = open(filename3, 'w+')
+# uwb_raw = open(filename4, 'w+')
+# pos_file.truncate()
+# vel_file.truncate()
+# uwb_file.truncate()
+# uwb_raw.truncate()
 
 try:
     # Connect to the Vehicle.
@@ -51,7 +56,7 @@ try:
     radio = uwb(a=2000, port='/dev/ttyACM0')  # UWB init
     print 'Connected. Starting to measure position...'
     radiothread = threading.Thread(target=radio.range,
-                                   args=(uwb_file, uwb_raw, server))
+                                   args=(True, server))
     radiothread.start()
 
     # Get some vehicle attributes (state)
@@ -62,6 +67,11 @@ try:
     print " Is Armable?: %s" % vehicle.is_armable
     print " System status: %s" % vehicle.system_status.state
     print " Mode: %s \n" % vehicle.mode.name    # settable
+
+    t_end = time.time() + (10)
+    while time.time() < t_end:
+        print "Waiting for filter to settle..."
+        time.sleep(1)
 
     while not vehicle.is_armable:
         print " Is Armable?: %s" % vehicle.is_armable
@@ -76,48 +86,37 @@ try:
         # print " Mode: %s" % vehicle.mode.name    # settable
         time.sleep(1)
 
-    t_end = time.time() + (20)
-    while time.time() < t_end:
-        print "Waiting for filter to settle..."
-        time.sleep(1)
 
-    print "Taking off!"
-    height = 5
-    vehicle.simple_takeoff(height)
-    while True:
-        print " Altitude: ", vehicle.location.global_relative_frame.alt
-        if vehicle.location.global_relative_frame.alt >= height*0.95:
-            # Trigger just below target alt.
-            print "Reached target altitude"
-            break
-        time.sleep(1)
+
+    # while True:
+    #     pass
+
+    # print "Taking off!"
+    # height = 5
+    # vehicle.simple_takeoff(height)
+    # while True:
+    #     print " Altitude: ", vehicle.location.global_relative_frame.alt
+    #     if vehicle.location.global_relative_frame.alt >= height*0.95:
+    #         # Trigger just below target alt.
+    #         print "Reached target altitude"
+    #         break
+    #     time.sleep(1)
 
     print 'Moving to desired position!'
 
-    controlthread = threading.Thread(target=control, args=(500,))
+    controlthread = threading.Thread(target=control, args=(1000,))
     controlthread.start()
 
-    for i in range(1, int(round(5/0.2))):
-        send_body_ned_velocity_logging(0, 0, 0, pos_file, vel_file)
-
-    print("Completed")
-    pos_file.close()
-    vel_file.close()
-    uwb_file.close()
-    uwb_raw.close()
-
     while True:
-        send_body_ned_velocity(0, 0, 0)
-
-    # Close vehicle object before exiting script
-    # vehicle.close()
+        pass
 
 except KeyboardInterrupt:
-    pos_file.close()
-    vel_file.close()
-    uwb_file.close()
-    uwb_raw.close()
+    # pos_file.close()
+    # vel_file.close()
+    # uwb_file.close()
+    # uwb_raw.close()
     radiothread.join()
+    vehicle.close()
     sys.exit(0)
 
 # Shut down simulator
