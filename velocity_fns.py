@@ -1,3 +1,9 @@
+###############################################################################
+#   velocity_fns.py
+#   Rahul Nunna, 2017
+#   Custom dronekit velocity functions, create custom mavlink messages.
+###############################################################################
+
 from dronekit import connect, VehicleMode
 from pymavlink import mavutil
 import time
@@ -30,7 +36,8 @@ def send_body_ned_velocity(vehicle, velocity_x, velocity_y, velocity_z):
     time.sleep(sleeptime)
 
 
-def send_body_ned_velocity_logging(vehicle, velocity_x, velocity_y, velocity_z, pos_file, vel_file):
+def send_body_ned_velocity_logging(vehicle, velocity_x, velocity_y,
+                                   velocity_z, pos_file, vel_file):
     """
     Move vehicle in direction based on specified velocity vectors.
     """
@@ -48,9 +55,12 @@ def send_body_ned_velocity_logging(vehicle, velocity_x, velocity_y, velocity_z, 
 
     # send command to vehicle on 1 Hz cycle
     vehicle.send_mavlink(msg)
-    latitude = re.search("lat=(.*?),", str(vehicle.location.global_relative_frame)).group(1)
-    longitude = re.search("lon=(.*),", str(vehicle.location.global_relative_frame)).group(1)
-    altitude = re.search("alt=(.*)", str(vehicle.location.global_relative_frame)).group(1)
+    latitude = re.search("lat=(.*?),",
+                         str(vehicle.location.global_relative_frame)).group(1)
+    longitude = re.search("lon=(.*),",
+                          str(vehicle.location.global_relative_frame)).group(1)
+    altitude = re.search("alt=(.*)",
+                         str(vehicle.location.global_relative_frame)).group(1)
     vel_x = re.search("\[(.*?),", str(vehicle.velocity)).group(1)
     vel_y = re.search(", (.*),", str(vehicle.velocity)).group(1)
     vel_z = re.search(".+\, (.+)]", str(vehicle.velocity)).group(1)

@@ -1,3 +1,9 @@
+###############################################################################
+#   follower_control_dynamic.py
+#   Rahul Nunna, 2017
+#   Main script for follower.
+###############################################################################
+
 # import dronekit_sitl
 import time
 import serial
@@ -17,19 +23,23 @@ from clientsocket import clientsocket
 
 
 def control(client):
+    lasterror = 0
     while True:
         myPos = radio.getRange()
         goal = float(client.receive())
-        gain = 0.0005
+        error = goal-myPos
+        kp = 0.003
+        kd = 0
         print "My current position:" + str(myPos)
         print "Desired position: " + str(goal)
-        if (abs(goal - myPos) > 20):
-            speed = (goal - myPos)*gain
+        if (abs(error) > 20):
+            prop = kp*error
+            deriv = kd*(error-lasterror)/0.1
+            speed = prop + deriv
             send_body_ned_velocity(vehicle, speed, 0, 0)
-            # myPos = radio.getRange()
         else:
             send_body_ned_velocity(vehicle, 0, 0, 0)
-
+        lasterror = error
 
 
 # filename1 = "pos_gps" + time.strftime("%m_%d_%H%M") + ".txt"
@@ -80,12 +90,12 @@ try:
 
     print " Is Armable?: %s" % vehicle.is_armable
     vehicle.mode = VehicleMode("GUIDED")
-    vehicle.armed = True
+    # vehicle.armed = True
 
-    while not vehicle.armed:
-        print " Waiting for arming..."
-        # print " Mode: %s" % vehicle.mode.name    # settable
-        time.sleep(1)
+    # while not vehicle.armed:
+    #     print " Waiting for arming..."
+    #     # print " Mode: %s" % vehicle.mode.name    # settable
+    #     time.sleep(1)
 
     # while True:
     #     pass

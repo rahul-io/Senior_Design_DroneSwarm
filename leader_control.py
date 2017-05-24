@@ -1,3 +1,9 @@
+###############################################################################
+#   follower_control_dynamic.py
+#   Rahul Nunna, 2017
+#   Main script for leader.
+###############################################################################
+
 from uwb import uwb
 from serversocket import serversocket
 import threading

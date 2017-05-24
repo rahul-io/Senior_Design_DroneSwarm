@@ -1,4 +1,11 @@
+###############################################################################
+#   serversocket.py
+#   Rahul Nunna, 2017
+#   Server socket class, for follower.
+###############################################################################
+
 import socket
+
 
 class clientsocket:
     def __init__(self, host, port=5454):
